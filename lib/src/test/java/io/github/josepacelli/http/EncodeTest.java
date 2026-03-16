@@ -21,11 +21,10 @@
  */
 package io.github.josepacelli.http;
 
-import static org.junit.Assert.assertEquals;
-
 import io.github.josepacelli.http.HttpRequest.HttpRequestException;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests of URL encoding done by {@link HttpRequest}
