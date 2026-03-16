@@ -19,17 +19,17 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-package com.github.kevinsawicki.http;
+package io.github.josepacelli.http;
 
-import static com.github.kevinsawicki.http.HttpRequest.CHARSET_UTF8;
-import static com.github.kevinsawicki.http.HttpRequest.delete;
-import static com.github.kevinsawicki.http.HttpRequest.encode;
-import static com.github.kevinsawicki.http.HttpRequest.get;
-import static com.github.kevinsawicki.http.HttpRequest.head;
-import static com.github.kevinsawicki.http.HttpRequest.options;
-import static com.github.kevinsawicki.http.HttpRequest.post;
-import static com.github.kevinsawicki.http.HttpRequest.put;
-import static com.github.kevinsawicki.http.HttpRequest.trace;
+import static io.github.josepacelli.http.HttpRequest.CHARSET_UTF8;
+import static io.github.josepacelli.http.HttpRequest.delete;
+import static io.github.josepacelli.http.HttpRequest.encode;
+import static io.github.josepacelli.http.HttpRequest.get;
+import static io.github.josepacelli.http.HttpRequest.head;
+import static io.github.josepacelli.http.HttpRequest.options;
+import static io.github.josepacelli.http.HttpRequest.post;
+import static io.github.josepacelli.http.HttpRequest.put;
+import static io.github.josepacelli.http.HttpRequest.trace;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
@@ -42,9 +42,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import com.github.kevinsawicki.http.HttpRequest.HttpRequestException;
-import com.github.kevinsawicki.http.HttpRequest.ConnectionFactory;
-import com.github.kevinsawicki.http.HttpRequest.UploadProgress;
+import io.github.josepacelli.http.HttpRequest.HttpRequestException;
+import io.github.josepacelli.http.HttpRequest.ConnectionFactory;
+import io.github.josepacelli.http.HttpRequest.UploadProgress;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

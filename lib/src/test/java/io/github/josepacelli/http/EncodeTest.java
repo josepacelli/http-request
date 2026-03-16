@@ -19,11 +19,11 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-package com.github.kevinsawicki.http;
+package io.github.josepacelli.http;
 
 import static org.junit.Assert.assertEquals;
 
-import com.github.kevinsawicki.http.HttpRequest.HttpRequestException;
+import io.github.josepacelli.http.HttpRequest.HttpRequestException;
 
 import org.junit.Test;
 

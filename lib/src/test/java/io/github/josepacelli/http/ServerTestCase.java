@@ -19,7 +19,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-package com.github.kevinsawicki.http;
+package io.github.josepacelli.http;
 
 import org.junit.Before;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -33,7 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.github.kevinsawicki.http.HttpRequest.CHARSET_UTF8;
+import static io.github.josepacelli.http.HttpRequest.CHARSET_UTF8;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

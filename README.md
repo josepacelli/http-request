@@ -1,53 +1,53 @@
-# Http Request [![Build Status](https://travis-ci.org/kevinsawicki/http-request.svg)](https://travis-ci.org/kevinsawicki/http-request)
+# Http Request
 
-A simple convenience library for using a [HttpURLConnection](http://download.oracle.com/javase/6/docs/api/java/net/HttpURLConnection.html)
+A simple convenience library for using a [HttpURLConnection](https://docs.oracle.com/javase/8/docs/api/java/net/HttpURLConnection.html)
 to make requests and access the response.
 
-This library is available under the [MIT License](http://www.opensource.org/licenses/mit-license.php).
+This library is available under the [MIT License](https://opensource.org/licenses/MIT).
 
-## Usage
+## About
 
-The http-request library is available from [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.github.kevinsawicki%22%20AND%20a%3A%22http-request%22).
+**http-request** is a lightweight, zero-dependency library providing a fluent API for HTTP requests using Java's built-in `HttpURLConnection`. This is a modernized fork of Kevin Sawicki's original project, maintained by [josepacelli](https://github.com/josepacelli) and published to Maven Central with Java 1.8+ support.
+
+## Installation
+
+The http-request library is available from [Maven Central](https://central.sonatype.com/artifact/io.github.josepacelli/http-request).
 
 ```xml
 <dependency>
-  <groupId>com.github.kevinsawicki</groupId>
+  <groupId>io.github.josepacelli</groupId>
   <artifactId>http-request</artifactId>
-  <version>6.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
-Not using [Maven](http://maven.apache.org/)? Simply copy the [HttpRequest](https://raw.githubusercontent.com/kevinsawicki/http-request/master/lib/src/main/java/com/github/kevinsawicki/http/HttpRequest.java)
-class into your project, update the package declaration, and you are good to go.
+**Not using Maven?** Simply copy the [HttpRequest](https://raw.githubusercontent.com/josepacelli/http-request/master/lib/src/main/java/io/github/josepacelli/http/HttpRequest.java)
+class into your project, update the package declaration to `io.github.josepacelli.http`, and you're all set.
 
-Javadocs are available [here](http://kevinsawicki.github.com/http-request/apidocs/index.html).
+**Javadocs** are available in the project's javadoc JAR or generated with `mvn javadoc:javadoc`.
 
 ## FAQ
-
-### Who uses this?
-
-See [here](https://github.com/kevinsawicki/http-request/wiki/Used-By) for a
-list of known projects using this library.
 
 ### Why was this written?
 
 This library was written to make HTTP requests simple and easy when using a `HttpURLConnection`.
 
-Libraries like [Apache HttpComponents](http://hc.apache.org) are great but sometimes
-for either simplicity, or perhaps for the environment you are deploying to (Android),
-you just want to use a good old-fashioned `HttpURLConnection`.  This library seeks
-to add convenience and common patterns to the act of making HTTP requests such as
-a fluid-interface for building requests and support for features such as multipart
-requests.
+Libraries like [Apache HttpComponents](https://hc.apache.org) are great, but sometimes you prefer simplicity or need to minimize dependencies (especially for environments like Android). This library provides a fluent API for building HTTP requests with support for common patterns like multipart requests, authentication, compression, and more—all without external dependencies.
 
-**Bottom line:** The single goal of this library is to improve the usability of the
-`HttpURLConnection` class.
+**Bottom line:** Improve the usability of `HttpURLConnection` with minimal overhead.
 
 ### What are the dependencies?
 
-**None**.  The goal of this library is to be a single class class with some inner static
-classes.  The test project does require [Jetty](http://eclipse.org/jetty/) in order
-to test requests against an actual HTTP server implementation.
+**Zero production dependencies.** The library is intentionally designed as a single main class with inner static classes. This makes it:
+- Lightweight and easy to include in any project
+- Simple to copy-paste the single class if needed
+- Ideal for Android and other constrained environments
+
+The test suite uses [Jetty 9.4](https://www.eclipse.org/jetty/) to test against a real HTTP server implementation, but this is not required for production use.
+
+### Java version requirements
+
+This library targets **Java 1.8+**. It uses only JDK built-in classes and is compatible with Java 8 and later.
 
 ### How are exceptions managed?
 
@@ -263,18 +263,39 @@ HttpRequest.setConnectionFactory(new ConnectionFactory() {
 });
 ```
 
+## License
+
+MIT License - see [LICENSE.md](LICENSE.md) for details.
+
+## About this Fork
+
+This is a modernized fork of Kevin Sawicki's [http-request](https://github.com/kevinsawicki/http-request) library, maintained and published to Maven Central by [Jose Pacelli](https://github.com/josepacelli).
+
+**Updates in this fork:**
+- Java 1.8+ target (originally Java 1.5)
+- Published to Maven Central under `io.github.josepacelli:http-request`
+- Jetty dependency updated to 9.4+ for testing
+- Package namespace: `io.github.josepacelli.http`
+- Maintained and supported on GitHub
+
 ## Contributors
 
-* [Kevin Sawicki](https://github.com/kevinsawicki) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=kevinsawicki)
-* [Eddie Ringle](https://github.com/eddieringle) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=eddieringle)
-* [Sean Jensen-Grey](https://github.com/seanjensengrey) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=seanjensengrey)
-* [Levi Notik](https://github.com/levinotik) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=levinotik)
-* [Michael Wang](https://github.com/michael-wang) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=michael-wang)
-* [Julien HENRY](https://github.com/henryju) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=henryju)
-* [Benoit Lubek](https://github.com/BoD) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=BoD)
-* [Jake Wharton](https://github.com/JakeWharton) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=JakeWharton)
-* [Oskar Hagberg](https://github.com/oskarhagberg) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=oskarhagberg)
-* [David Pate](https://github.com/DavidTPate) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=DavidTPate)
-* [Anton Rieder](https://github.com/aried3r) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=aried3r)
-* [Jean-Baptiste Lièvremont](https://github.com/jblievremont) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=jblievremont)
-* [Roman Petrenko](https://github.com/romanzes) :: [contributions](https://github.com/kevinsawicki/http-request/commits?author=romanzes)
+**Original Project:**
+* [Kevin Sawicki](https://github.com/kevinsawicki) - Original author and creator
+
+**Active Maintainers:**
+* [Jose Pacelli](https://github.com/josepacelli) - Current maintainer, Maven Central publishing
+
+**Original Contributors:**
+* [Eddie Ringle](https://github.com/eddieringle)
+* [Sean Jensen-Grey](https://github.com/seanjensengrey)
+* [Levi Notik](https://github.com/levinotik)
+* [Michael Wang](https://github.com/michael-wang)
+* [Julien HENRY](https://github.com/henryju)
+* [Benoit Lubek](https://github.com/BoD)
+* [Jake Wharton](https://github.com/JakeWharton)
+* [Oskar Hagberg](https://github.com/oskarhagberg)
+* [David Pate](https://github.com/DavidTPate)
+* [Anton Rieder](https://github.com/aried3r)
+* [Jean-Baptiste Lièvremont](https://github.com/jblievremont)
+* [Roman Petrenko](https://github.com/romanzes)
