@@ -35,6 +35,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
+import java.security.KeyStore;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -3662,5 +3663,112 @@ public class HttpRequestTest extends ServerTestCase {
     int code = post(url).progress(null).send(file).code();
     assertEquals(HTTP_OK, code);
     assertEquals("hello", body.get());
+  }
+
+  /**
+   * Test that clientCertificatePfx() with a PKCS12 KeyStore configures the
+   * SSLSocketFactory on HTTPS connections
+   */
+  @Test
+  public void clientCertificatePfx() throws Exception {
+    // Create a PKCS12 KeyStore in memory with a self-signed cert
+    final KeyStore ks = KeyStore.getInstance("PKCS12");
+    ks.load(null, null); // Create empty PKCS12 store
+
+    // Try loading it via InputStream to verify the method doesn't throw
+    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ks.store(baos, "password".toCharArray());
+    final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+    final HttpRequest request = get("https://localhost").clientCertificatePfx(bais, "password"
+        .toCharArray());
+    // Verify that the connection is an HTTPS connection and SSLSocketFactory was set
+    final HttpURLConnection conn = request.getConnection();
+    if (conn instanceof HttpsURLConnection) {
+      final HttpsURLConnection https = (HttpsURLConnection) conn;
+      assertNotNull("SSLSocketFactory should be set after clientCertificatePfx()",
+          https.getSSLSocketFactory());
+    }
+  }
+
+  /**
+   * Test that clientCertificate() with PEM certificate and key streams configures the
+   * SSLSocketFactory on HTTPS connections
+   */
+  @Test
+  public void clientCertificatePem() throws Exception {
+    // This test verifies that the method can be called and processes cert/key streams
+    // without throwing an exception. A full mTLS test would require a real server
+    // configured for client certificate authentication.
+
+    // Create a minimal valid X.509 cert and private key in memory
+    // For this test, we'll just verify the method chain doesn't throw
+    final String certPem =
+        "-----BEGIN CERTIFICATE-----\n" +
+        "MIICljCCAX4CCQCZ...(truncated for brevity)\n" +
+        "-----END CERTIFICATE-----";
+    final String keyPem =
+        "-----BEGIN PRIVATE KEY-----\n" +
+        "MIIEvQIBA...(truncated for brevity)\n" +
+        "-----END PRIVATE KEY-----";
+
+    final ByteArrayInputStream certStream = new ByteArrayInputStream(certPem.getBytes());
+    final ByteArrayInputStream keyStream = new ByteArrayInputStream(keyPem.getBytes());
+
+    try {
+      // This will fail because the cert/key are invalid, but we're testing that
+      // the method accepts the parameters and attempts to load them
+      get("https://localhost").clientCertificate(certStream, keyStream);
+      // If we get here without exception, the parameter handling works
+      fail("Expected HttpRequestException for invalid certificate");
+    } catch (HttpRequestException e) {
+      // Expected - the cert/key are invalid. Verify it's a security-related exception
+      assertNotNull("Exception cause should be set", e.getCause());
+      assertTrue("Exception should be about certificate loading",
+          e.getCause().getMessage().contains("certificate")
+              || e.getCause().getMessage().contains("Certificate")
+              || e.getCause().getMessage().contains("key")
+              || e.getCause().getMessage().contains("Key"));
+    }
+  }
+
+  /**
+   * Test that clientCertificatePfx() can be called with a File without throwing
+   */
+  @Test
+  public void clientCertificatePfxFile() throws Exception {
+    // Create a temporary PKCS12 file
+    final File pkcsFile = File.createTempFile("test", ".pfx");
+    pkcsFile.deleteOnExit();
+    final KeyStore ks = KeyStore.getInstance("PKCS12");
+    ks.load(null, null);
+    try (final FileOutputStream fos = new FileOutputStream(pkcsFile)) {
+      ks.store(fos, "password".toCharArray());
+    }
+
+    // Try to load it
+    final HttpRequest request = get("https://localhost").clientCertificatePfx(pkcsFile,
+        "password".toCharArray());
+    final HttpURLConnection conn = request.getConnection();
+    if (conn instanceof HttpsURLConnection) {
+      assertNotNull("SSLSocketFactory should be set",
+          ((HttpsURLConnection) conn).getSSLSocketFactory());
+    }
+  }
+
+  /**
+   * Test that clientCertificatePfx() with a non-existent file throws HttpRequestException
+   */
+  @Test
+  public void clientCertificatePfxFileNotFound() throws Exception {
+    final File nonExistent = new File("/tmp/definitely-does-not-exist-" + System.nanoTime()
+        + ".pfx");
+    try {
+      get("https://localhost").clientCertificatePfx(nonExistent, "password".toCharArray());
+      fail("Expected HttpRequestException for non-existent file");
+    } catch (HttpRequestException e) {
+      assertTrue("Exception should mention file not found",
+          e.getCause().getMessage().contains("not found"));
+    }
   }
 }

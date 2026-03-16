@@ -22,6 +22,7 @@
 package io.github.josepacelli.http;
 
 import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -30,8 +31,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -2833,6 +2840,162 @@ public class HttpRequest {
       ((HttpsURLConnection) connection)
           .setHostnameVerifier(getTrustedVerifier());
     return this;
+  }
+
+  /**
+   * Configure HTTPS connection to use a client certificate from a PKCS12 (.pfx) file.
+   * The certificate must be encrypted with the provided password.
+   *
+   * @param pfxFile the PKCS12 file containing the client certificate and private key
+   * @param password the password protecting the PKCS12 file
+   * @return this request
+   * @throws HttpRequestException on any certificate loading or SSL configuration error
+   */
+  public HttpRequest clientCertificatePfx(final File pfxFile, final char[] password)
+      throws HttpRequestException {
+    try {
+      return clientCertificatePfx(new FileInputStream(pfxFile), password);
+    } catch (FileNotFoundException e) {
+      throw new HttpRequestException(new IOException("Certificate file not found: " + pfxFile, e));
+    }
+  }
+
+  /**
+   * Configure HTTPS connection to use a client certificate from a PKCS12 (.pfx) stream.
+   * The certificate must be encrypted with the provided password.
+   *
+   * @param pfx input stream of PKCS12 data
+   * @param password the password protecting the PKCS12 data
+   * @return this request
+   * @throws HttpRequestException on any certificate loading or SSL configuration error
+   */
+  public HttpRequest clientCertificatePfx(final InputStream pfx, final char[] password)
+      throws HttpRequestException {
+    try {
+      final KeyStore ks = KeyStore.getInstance("PKCS12");
+      ks.load(pfx, password);
+      return applyClientCertificate(ks, password);
+    } catch (GeneralSecurityException | IOException e) {
+      final IOException io = e instanceof IOException ? (IOException) e :
+          new IOException("Security exception loading PKCS12 certificate", e);
+      throw new HttpRequestException(io);
+    }
+  }
+
+  /**
+   * Configure HTTPS connection to use a client certificate from a PEM-encoded certificate file
+   * and a separate PEM-encoded private key file.
+   *
+   * @param crtFile the PEM-encoded certificate (.crt) file
+   * @param keyFile the PEM-encoded private key file
+   * @return this request
+   * @throws HttpRequestException on any certificate loading or SSL configuration error
+   */
+  public HttpRequest clientCertificate(final File crtFile, final File keyFile)
+      throws HttpRequestException {
+    try {
+      return clientCertificate(new FileInputStream(crtFile), new FileInputStream(keyFile));
+    } catch (FileNotFoundException e) {
+      throw new HttpRequestException(new IOException("Certificate or key file not found", e));
+    }
+  }
+
+  /**
+   * Configure HTTPS connection to use a client certificate from a PEM-encoded certificate
+   * stream and a separate PEM-encoded private key stream.
+   *
+   * @param crt input stream of PEM-encoded certificate data
+   * @param key input stream of PEM-encoded private key data
+   * @return this request
+   * @throws HttpRequestException on any certificate loading or SSL configuration error
+   */
+  public HttpRequest clientCertificate(final InputStream crt, final InputStream key)
+      throws HttpRequestException {
+    try {
+      // Load certificate
+      final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+      final Certificate certificate = cf.generateCertificate(crt);
+
+      // Load private key
+      final byte[] keyBytes = readAllBytes(key);
+      final String keyPem = new String(keyBytes);
+      final byte[] decodedKey = extractAndDecodePrivateKey(keyPem);
+      final KeyFactory kf = KeyFactory.getInstance("RSA");
+      final PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(decodedKey));
+
+      // Create in-memory PKCS12 keystore with cert and key
+      final KeyStore ks = KeyStore.getInstance("PKCS12");
+      ks.load(null, null);
+      ks.setKeyEntry("client", privateKey, null, new Certificate[] { certificate });
+
+      return applyClientCertificate(ks, null);
+    } catch (GeneralSecurityException | IOException e) {
+      final IOException io = e instanceof IOException ? (IOException) e :
+          new IOException("Security exception loading certificate and key", e);
+      throw new HttpRequestException(io);
+    }
+  }
+
+  /**
+   * Apply a configured KeyStore to the HTTPS connection as client certificate
+   *
+   * @param ks the KeyStore containing the client certificate(s) and key(s)
+   * @param password the password for the KeyStore (can be null for in-memory keystores)
+   * @return this request
+   * @throws HttpRequestException on any SSL context initialization error
+   */
+  private HttpRequest applyClientCertificate(final KeyStore ks, final char[] password)
+      throws HttpRequestException {
+    try {
+      final KeyManagerFactory kmf =
+          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      kmf.init(ks, password);
+      final SSLContext context = SSLContext.getInstance("TLS");
+      context.init(kmf.getKeyManagers(), null, new SecureRandom());
+      final HttpURLConnection connection = getConnection();
+      if (connection instanceof HttpsURLConnection)
+        ((HttpsURLConnection) connection).setSSLSocketFactory(context.getSocketFactory());
+      return this;
+    } catch (GeneralSecurityException e) {
+      throw new HttpRequestException(
+          new IOException("Security exception configuring client certificate", e));
+    }
+  }
+
+  /**
+   * Read all bytes from an input stream into a byte array
+   *
+   * @param stream the input stream to read
+   * @return the bytes read
+   * @throws IOException if an I/O error occurs
+   */
+  private byte[] readAllBytes(final InputStream stream) throws IOException {
+    final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    final byte[] data = new byte[8192];
+    int nRead;
+    while ((nRead = stream.read(data, 0, data.length)) != -1)
+      buffer.write(data, 0, nRead);
+    return buffer.toByteArray();
+  }
+
+  /**
+   * Extract base64-encoded private key from PEM format and decode it
+   *
+   * @param pem the PEM-encoded key string
+   * @return the decoded key bytes
+   * @throws IllegalArgumentException if the PEM format is invalid
+   */
+  private byte[] extractAndDecodePrivateKey(final String pem)
+      throws IllegalArgumentException {
+    final String cleanPem = pem
+        .replaceAll("-----BEGIN.*KEY-----", "")
+        .replaceAll("-----END.*KEY-----", "")
+        .replaceAll("\\s+", "");
+    try {
+      return Base64.getDecoder().decode(cleanPem);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid base64-encoded private key in PEM", e);
+    }
   }
 
   /**

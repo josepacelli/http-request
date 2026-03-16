@@ -17,7 +17,7 @@ The http-request library is available from [Maven Central](https://central.sonat
 <dependency>
   <groupId>io.github.josepacelli</groupId>
   <artifactId>http-request</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
 </dependency>
 ```
 
@@ -239,6 +239,51 @@ request.proxyBasic("username", "p4ssw0rd");
 
 ```java
 int code = HttpRequest.get("http://google.com").followRedirects(true).code();
+```
+
+### Client certificate authentication (mTLS)
+
+#### Using a PKCS12 (.pfx) certificate
+
+```java
+// Load certificate from a .pfx file with a password
+String response = HttpRequest.get("https://api.example.com/endpoint")
+    .clientCertificatePfx(new File("client-certificate.pfx"), "password".toCharArray())
+    .body();
+```
+
+#### Using PEM certificate and private key
+
+```java
+// Load certificate and private key from separate PEM files
+String response = HttpRequest.get("https://api.example.com/endpoint")
+    .clientCertificate(new File("client.crt"), new File("private.key"))
+    .body();
+```
+
+#### Real-world example: Accessing Brazilian SVRS Web Service
+
+```java
+// Example: Accessing SVRS (Secretaria da Fazenda do RS) WSDL with client certificate
+String wsdl = HttpRequest.get("https://one.svrs.rs.gov.br/ws/oneRecepcaoLeitura/oneRecepcaoLeitura.asmx?wsdl")
+    .clientCertificatePfx(new File("certificado-pessoa-juridica.pfx"), "senha123".toCharArray())
+    .trustAllCerts()  // May be needed if server uses self-signed certificate
+    .body();
+
+System.out.println(wsdl);
+```
+
+#### Combining client certificate with other options
+
+```java
+// Chain multiple authentication/security options together
+HttpRequest request = HttpRequest.post("https://secure-api.example.com/data")
+    .clientCertificatePfx(new File("client.pfx"), "password".toCharArray())
+    .trustAllCerts()
+    .trustAllHosts()
+    .header("Content-Type", "application/json")
+    .send("{\"key\": \"value\"}")
+    .code();
 ```
 
 ### Custom connection factory
