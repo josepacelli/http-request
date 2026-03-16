@@ -261,17 +261,6 @@ String response = HttpRequest.get("https://api.example.com/endpoint")
     .body();
 ```
 
-#### Real-world example: Accessing Brazilian SVRS Web Service
-
-```java
-// Example: Accessing SVRS (Secretaria da Fazenda do RS) WSDL with client certificate
-String wsdl = HttpRequest.get("https://one.svrs.rs.gov.br/ws/oneRecepcaoLeitura/oneRecepcaoLeitura.asmx?wsdl")
-    .clientCertificatePfx(new File("certificado-pessoa-juridica.pfx"), "senha123".toCharArray())
-    .trustAllCerts()  // May be needed if server uses self-signed certificate
-    .body();
-
-System.out.println(wsdl);
-```
 
 #### Combining client certificate with other options
 
