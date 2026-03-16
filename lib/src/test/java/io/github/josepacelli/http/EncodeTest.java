@@ -21,9 +21,9 @@
  */
 package io.github.josepacelli.http;
 
-import io.github.josepacelli.http.HttpRequest.HttpRequestException;
 import org.junit.Test;
 
+import static io.github.josepacelli.http.HttpRequest.*;
 import static org.junit.Assert.assertEquals;
 
 /**

@@ -21,7 +21,6 @@
  */
 package io.github.josepacelli.http;
 
-import io.github.josepacelli.http.HttpRequest.*;
 import org.eclipse.jetty.server.Request;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -44,6 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPOutputStream;
 
+import static io.github.josepacelli.http.HttpRequest.*;
 import static java.net.HttpURLConnection.*;
 import static org.junit.Assert.*;
 
