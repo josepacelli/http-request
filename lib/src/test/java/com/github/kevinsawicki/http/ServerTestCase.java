@@ -21,8 +21,6 @@
  */
 package com.github.kevinsawicki.http;
 
-import org.eclipse.jetty.util.B64Code;
-
 import org.junit.Before;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -31,7 +29,7 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,8 +43,8 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.junit.AfterClass;
 
 /**
@@ -148,13 +146,13 @@ public class ServerTestCase {
     server = new Server();
     if (handler != null)
       server.setHandler(handler);
-    Connector connector = new SelectChannelConnector();
+    ServerConnector connector = new ServerConnector(server);
     connector.setPort(0);
     server.setConnectors(new Connector[] { connector });
     server.start();
 
     proxy = new Server();
-    Connector proxyConnector = new SelectChannelConnector();
+    ServerConnector proxyConnector = new ServerConnector(proxy);
     proxyConnector.setPort(0);
     proxy.setConnectors(new Connector[] { proxyConnector });
 
@@ -167,11 +165,8 @@ public class ServerTestCase {
         proxyHitCount.incrementAndGet();
         String auth = request.getHeader("Proxy-Authorization");
         auth = auth.substring(auth.indexOf(' ') + 1);
-        try {
-          auth = B64Code.decode(auth, CHARSET_UTF8);
-        } catch (UnsupportedEncodingException e) {
-          throw new RuntimeException(e);
-        }
+        auth = new String(java.util.Base64.getDecoder().decode(auth),
+            StandardCharsets.UTF_8);
         int colon = auth.indexOf(':');
         proxyUser.set(auth.substring(0, colon));
         proxyPassword.set(auth.substring(colon + 1));
@@ -184,7 +179,7 @@ public class ServerTestCase {
     handlerList.addHandler(proxyHandler);
     proxy.setHandler(handlerList);
 
-    ServletHolder proxyHolder = proxyHandler.addServletWithMapping("org.eclipse.jetty.servlets.ProxyServlet", "/");
+    ServletHolder proxyHolder = proxyHandler.addServletWithMapping("org.eclipse.jetty.proxy.ProxyServlet", "/");
     proxyHolder.setAsyncSupported(true);
 
     proxy.start();
