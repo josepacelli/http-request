@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Key characteristics:**
 - Targets Java 1.8+ (modernized from Java 1.5)
-- MIT Licensed, published to Maven Central as `io.github.josepacelli:http-request:1.0.0`
+- MIT Licensed, published to Maven Central as `io.github.josepacelli:http-request` (version tracked in `lib/pom.xml`)
+- Package `io.github.josepacelli.http` (renamed from the upstream `com.github.kevinsawicki.http`)
 - Single main class design: `HttpRequest.java` with inner static classes for configuration
 - No production dependencies (significant design goal)
 - Test suite uses Jetty 9.4 for realistic HTTP testing (updated from Jetty 8)
@@ -40,20 +41,26 @@ mvn test -Dtest=HttpRequestTest#testMethod
 mvn javadoc:javadoc
 ```
 
+**Full verify (build + test + jacoco coverage report), what CI runs:**
+```bash
+mvn --batch-mode verify
+```
+
 **Clean build artifacts:**
 ```bash
 mvn clean
 ```
+
+CI (`.github/workflows/build.yml`) runs `mvn --batch-mode verify` on Java 8, 11, 17, and 21 for every push/PR to `master`. `.travis.yml` is a legacy leftover and is not the active CI.
 
 ## Project Structure
 
 ```
 http-request/
 ├── lib/                                      # Main library module
-│   ├── src/main/java/com/github/kevinsawicki/http/
-│   │   ├── HttpRequest.java                 # Main class (fluent HTTP API)
-│   │   └── EncodeTest.java                  # Encoding utilities test
-│   ├── src/test/java/com/github/kevinsawicki/http/
+│   ├── src/main/java/io/github/josepacelli/http/
+│   │   └── HttpRequest.java                 # Main class (fluent HTTP API)
+│   ├── src/test/java/io/github/josepacelli/http/
 │   │   ├── HttpRequestTest.java             # Main integration tests
 │   │   ├── EncodeTest.java                  # Encoding tests
 │   │   └── ServerTestCase.java              # Test server utilities
@@ -105,7 +112,11 @@ Tests require a real HTTP server (Jetty) and make actual HTTP requests. This val
 
 **Releases:**
 - Uses `maven-release-plugin` with Sonatype Central Publishing Plugin for Maven Central
-- Current version is in `lib/pom.xml` (currently 1.0.0 for josepacelli fork)
-- Maven Central coordinates: `io.github.josepacelli:http-request:1.0.0`
+- Version is set in both `pom.xml` (parent) and `lib/pom.xml` (module) — keep them in sync
 - Release artifacts include source JAR, javadoc JAR, and bundle manifest (via maven-bundle-plugin)
 - To publish: `mvn --batch-mode -P release deploy` (requires Sonatype account, GPG key, and credentials in `~/.m2/settings.xml`)
+
+## Working Conventions
+
+- Never add a `Co-Authored-By` line to commit messages.
+- Before finishing any code change, run the `simplify` skill on it.
