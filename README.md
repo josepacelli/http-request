@@ -17,7 +17,7 @@ The http-request library is available from [Maven Central](https://central.sonat
 <dependency>
   <groupId>io.github.josepacelli</groupId>
   <artifactId>http-request</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
 </dependency>
 ```
 

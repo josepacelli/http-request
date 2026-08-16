@@ -22,7 +22,6 @@
 package io.github.josepacelli.http;
 
 import javax.net.ssl.*;
-import javax.net.ssl.KeyManagerFactory;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -44,6 +43,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 
 import static java.net.HttpURLConnection.*;
@@ -2269,6 +2269,41 @@ public class HttpRequest {
   }
 
   /**
+   * Read all bytes from an input stream into a byte array, closing the
+   * stream afterward
+   *
+   * @param stream the input stream to read
+   * @return the bytes read
+   */
+  private byte[] readAllBytes(final InputStream stream) {
+    return closeAfter(stream, () -> {
+      final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      final byte[] data = new byte[bufferSize];
+      int read;
+      while ((read = stream.read(data)) != -1)
+        buffer.write(data, 0, read);
+      return buffer.toByteArray();
+    });
+  }
+
+  /**
+   * Extract base64-encoded private key from PEM format and decode it
+   *
+   * @param pem the PEM-encoded key string
+   * @return the decoded key bytes
+   * @throws IllegalArgumentException if the PEM format is invalid
+   */
+  private static byte[] extractAndDecodePrivateKey(final String pem)
+      throws IllegalArgumentException {
+    final String cleanPem = pem.replaceAll("-----(BEGIN|END).*?-----|\\s+", "");
+    try {
+      return Base64.getDecoder().decode(cleanPem);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid base64-encoded private key in PEM", e);
+    }
+  }
+
+  /**
    * Copy from reader to writer
    *
    * @param input
@@ -2810,6 +2845,21 @@ public class HttpRequest {
   }
 
   /**
+   * Configure the HTTPS connection, if the current request is a HTTPS request
+   * <p>
+   * This method does nothing if the current request is not a HTTPS request
+   *
+   * @param configurer
+   * @return this request
+   */
+  private HttpRequest configureHttps(final Consumer<HttpsURLConnection> configurer) {
+    final HttpURLConnection connection = getConnection();
+    if (connection instanceof HttpsURLConnection)
+      configurer.accept((HttpsURLConnection) connection);
+    return this;
+  }
+
+  /**
    * Configure HTTPS connection to trust all certificates
    * <p>
    * This method does nothing if the current request is not a HTTPS request
@@ -2818,11 +2868,7 @@ public class HttpRequest {
    * @throws HttpRequestException
    */
   public HttpRequest trustAllCerts() throws HttpRequestException {
-    final HttpURLConnection connection = getConnection();
-    if (connection instanceof HttpsURLConnection)
-      ((HttpsURLConnection) connection)
-          .setSSLSocketFactory(getTrustedFactory());
-    return this;
+    return configureHttps(connection -> connection.setSSLSocketFactory(getTrustedFactory()));
   }
 
   /**
@@ -2835,11 +2881,7 @@ public class HttpRequest {
    * @return this request
    */
   public HttpRequest trustAllHosts() {
-    final HttpURLConnection connection = getConnection();
-    if (connection instanceof HttpsURLConnection)
-      ((HttpsURLConnection) connection)
-          .setHostnameVerifier(getTrustedVerifier());
-    return this;
+    return configureHttps(connection -> connection.setHostnameVerifier(getTrustedVerifier()));
   }
 
   /**
@@ -2952,49 +2994,10 @@ public class HttpRequest {
       kmf.init(ks, password);
       final SSLContext context = SSLContext.getInstance("TLS");
       context.init(kmf.getKeyManagers(), null, new SecureRandom());
-      final HttpURLConnection connection = getConnection();
-      if (connection instanceof HttpsURLConnection)
-        ((HttpsURLConnection) connection).setSSLSocketFactory(context.getSocketFactory());
-      return this;
+      return configureHttps(connection -> connection.setSSLSocketFactory(context.getSocketFactory()));
     } catch (GeneralSecurityException e) {
       throw new HttpRequestException(
           new IOException("Security exception configuring client certificate", e));
-    }
-  }
-
-  /**
-   * Read all bytes from an input stream into a byte array
-   *
-   * @param stream the input stream to read
-   * @return the bytes read
-   * @throws IOException if an I/O error occurs
-   */
-  private byte[] readAllBytes(final InputStream stream) throws IOException {
-    final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    final byte[] data = new byte[8192];
-    int nRead;
-    while ((nRead = stream.read(data, 0, data.length)) != -1)
-      buffer.write(data, 0, nRead);
-    return buffer.toByteArray();
-  }
-
-  /**
-   * Extract base64-encoded private key from PEM format and decode it
-   *
-   * @param pem the PEM-encoded key string
-   * @return the decoded key bytes
-   * @throws IllegalArgumentException if the PEM format is invalid
-   */
-  private byte[] extractAndDecodePrivateKey(final String pem)
-      throws IllegalArgumentException {
-    final String cleanPem = pem
-        .replaceAll("-----BEGIN.*KEY-----", "")
-        .replaceAll("-----END.*KEY-----", "")
-        .replaceAll("\\s+", "");
-    try {
-      return Base64.getDecoder().decode(cleanPem);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid base64-encoded private key in PEM", e);
     }
   }
 
