@@ -46,6 +46,8 @@ jobs:
         run: |
           VERSION=$(mvn -q -pl lib help:evaluate -Dexpression=project.version -DforceStdout)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Package jars
+        run: mvn --batch-mode -pl lib -am package -DskipTests
       - name: Create or replace release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -55,4 +57,4 @@ jobs:
             echo "Release $TAG already exists, deleting."
             gh release delete "$TAG" --yes --cleanup-tag
           fi
-          gh release create "$TAG" --title "$TAG" --generate-notes
+          gh release create "$TAG" --title "$TAG" --generate-notes lib/target/http-request-*.jar
