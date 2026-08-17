@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>http-request — fluent HTTP client for Java, zero dependencies</title>
+<meta name="description" content="A lightweight, zero-dependency Java library that wraps HttpURLConnection in a fluent API. Java 8+, single-class design, published to Maven Central.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://josepacelli.github.io/http-request/">
+<meta property="og:title" content="http-request — fluent HTTP client for Java, zero dependencies">
+<meta property="og:description" content="A lightweight, zero-dependency Java library that wraps HttpURLConnection in a fluent API. Java 8+, single-class design, published to Maven Central.">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="http-request — fluent HTTP client for Java, zero dependencies">
+<meta name="twitter:description" content="A lightweight, zero-dependency Java library that wraps HttpURLConnection in a fluent API. Java 8+, single-class design, published to Maven Central.">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="brand">http-<span style="color:var(--text-dim);font-weight:400;">request</span></div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#examples">Examples</a>
+      <a href="#compare">Compare</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/josepacelli/http-request">GitHub</a>
+      <a class="gh-stars" href="https://github.com/josepacelli/http-request/stargazers" id="gh-stars">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        Stars <span id="gh-stars-count">···</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero" style="border-top:none;">
+    <span class="status-badge">stable · on Maven Central</span>
+    <h1>A fluent API for Java's HttpURLConnection, with zero dependencies.</h1>
+    <p class="lead">
+      <code>http-request</code> wraps the JDK's built-in <code>HttpURLConnection</code> in a
+      chainable API for GET/POST/multipart requests, headers, auth, proxies, gzip, mTLS, and
+      more — without pulling in Apache HttpComponents or anything else.
+    </p>
+    <div class="specs">Java 8+ · MIT · io.github.josepacelli:http-request</div>
+    <div class="cta-row">
+      <a class="btn primary" href="https://central.sonatype.com/artifact/io.github.josepacelli/http-request">View on Maven Central</a>
+      <a class="btn ghost" href="https://github.com/josepacelli/http-request">View on GitHub</a>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Installation</h2>
+    <p class="section-sub">Available from Maven Central. No transitive production dependencies.</p>
+    <pre class="code-block"><code>&lt;dependency&gt;
+  &lt;groupId&gt;io.github.josepacelli&lt;/groupId&gt;
+  &lt;artifactId&gt;http-request&lt;/artifactId&gt;
+  &lt;version&gt;1.0.4&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+    <p class="section-sub" style="margin-top:20px;">
+      Not using Maven? Copy the single
+      <a href="https://raw.githubusercontent.com/josepacelli/http-request/master/lib/src/main/java/io/github/josepacelli/http/HttpRequest.java">HttpRequest.java</a>
+      file into your project and update the package declaration — that's the whole library.
+    </p>
+  </section>
+
+  <section id="features">
+    <h2>Features</h2>
+    <p class="section-sub">Everything is one class with inner static classes. No external dependencies, ever.</p>
+    <div class="features">
+      <div class="feature"><span class="num">001</span><div><h4>Fluent chaining</h4><p><code>HttpRequest.get(url).accept("application/json").code()</code>.</p></div></div>
+      <div class="feature"><span class="num">002</span><div><h4>GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE</h4><p>Static factory methods for every standard HTTP method.</p></div></div>
+      <div class="feature"><span class="num">003</span><div><h4>Multipart requests</h4><p>Mixed text and file parts via <code>.part(...)</code>.</p></div></div>
+      <div class="feature"><span class="num">004</span><div><h4>Runtime exceptions</h4><p><code>IOException</code> wrapped in <code>HttpRequestException</code> — no checked-exception burden.</p></div></div>
+      <div class="feature"><span class="num">005</span><div><h4>Basic &amp; proxy authentication</h4><p>Built-in helpers for credentials on the request or the proxy.</p></div></div>
+      <div class="feature"><span class="num">006</span><div><h4>Gzip compression</h4><p>Request and transparently decompress gzip-encoded responses.</p></div></div>
+      <div class="feature"><span class="num">007</span><div><h4>mTLS client certificates</h4><p>PKCS12 (.pfx) or separate PEM cert/key, plus trust-all overrides for testing.</p></div></div>
+      <div class="feature"><span class="num">008</span><div><h4>ETag / conditional requests</h4><p><code>ifNoneMatch()</code> and <code>notModified()</code> for cache-aware clients.</p></div></div>
+      <div class="feature"><span class="num">009</span><div><h4>Pluggable connection factory</h4><p>Swap in a custom <code>ConnectionFactory</code>, e.g. to route through OkHttp.</p></div></div>
+    </div>
+  </section>
+
+  <section id="examples">
+    <h2>Examples</h2>
+    <p class="section-sub">A sample of the fluent API. Full reference in the <a href="https://github.com/josepacelli/http-request#examples">README</a>.</p>
+    <pre class="code-block"><code>int status = HttpRequest.get("http://google.com").code();
+
+String body = HttpRequest.get("http://google.com").body();
+
+HttpRequest.post("http://google.com").send("name=kevin").code();
+
+HttpRequest.get("http://google.com").basic("user", "p4ssw0rd").code();
+
+HttpRequest request = HttpRequest.post("http://google.com");
+request.part("status[body]", "Making a multipart request");
+request.part("status[image]", new File("/home/kevin/Pictures/ide.png"));</code></pre>
+  </section>
+
+  <section id="compare">
+    <h2>Compare</h2>
+    <p class="section-sub">Against common alternatives for talking HTTP from Java.</p>
+    <div class="table-scroll">
+      <table class="compare">
+        <thead>
+          <tr><th></th><th>http-request</th><th>Apache HttpComponents</th><th>OkHttp</th></tr>
+        </thead>
+        <tbody>
+          <tr class="self"><td>Production dependencies</td><td class="yes">None</td><td class="no">Several</td><td class="no">Okio + Kotlin stdlib</td></tr>
+          <tr class="self"><td>Single-file drop-in</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr class="self"><td>Java 8+, no build step required</td><td class="yes">Yes</td><td class="no">Varies</td><td class="no">Varies</td></tr>
+          <tr class="self"><td>API style</td><td class="yes">Fluent, chained</td><td class="no">Verbose, builder-heavy</td><td class="no">Fluent, but heavier runtime</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>FAQ</h2>
+
+    <details class="faq">
+      <summary>Are requests asynchronous?</summary>
+      <p>No. <code>HttpURLConnection</code>'s API is synchronous, so every method on
+      <code>HttpRequest</code> is too. Call it off the main thread in UI applications — e.g.
+      from an Android <code>AsyncTask</code>.</p>
+    </details>
+
+    <details class="faq">
+      <summary>How are exceptions handled?</summary>
+      <p><code>HttpRequest</code> throws no checked exceptions. Low-level <code>IOException</code>s
+      are wrapped in <code>HttpRequestException</code> (a <code>RuntimeException</code>); call
+      <code>getCause()</code> to get the original <code>IOException</code>.</p>
+    </details>
+
+    <details class="faq">
+      <summary>What are the dependencies?</summary>
+      <p>None in production. The test suite uses Jetty 9.4 to run against a real HTTP server, but
+      that's a test-scope dependency only — it never ships with your application.</p>
+    </details>
+
+    <details class="faq">
+      <summary>Is this suitable for Android?</summary>
+      <p>Yes — zero dependencies and a single class make it easy to drop into constrained
+      environments where minimizing dependency weight matters.</p>
+    </details>
+
+    <details class="faq">
+      <summary>What's the license?</summary>
+      <p>MIT. Free to use, modify, and redistribute, including commercially.</p>
+    </details>
+
+    <details class="faq">
+      <summary>Is this related to Kevin Sawicki's original http-request?</summary>
+      <p>Yes — this is a modernized fork, targeting Java 8+ (up from Java 5), published to Maven
+      Central under <code>io.github.josepacelli</code>, and actively maintained.</p>
+    </details>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://github.com/josepacelli/http-request">GitHub</a>
+      <a href="https://central.sonatype.com/artifact/io.github.josepacelli/http-request">Maven Central</a>
+      <a href="https://github.com/josepacelli/http-request/issues">Issues</a>
+      <a href="https://github.com/josepacelli/http-request/blob/master/LICENSE.md">License (MIT)</a>
+      <a href="https://github.com/kevinsawicki/http-request">Original project</a>
+    </div>
+    <div>Modernized fork of Kevin Sawicki's http-request, maintained by Jose Pacelli.</div>
+  </div>
+</footer>
+
+<script>
+  fetch("https://api.github.com/repos/josepacelli/http-request")
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      if (!data || typeof data.stargazers_count !== "number") return;
+      const el = document.getElementById("gh-stars-count");
+      if (el) el.textContent = data.stargazers_count;
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>
