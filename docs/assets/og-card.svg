@@ -1,0 +1,31 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0d10"/>
+      <stop offset="100%" stop-color="#141c22"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#23272d" stroke-width="2"/>
+
+  <text x="80" y="150" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="26" fill="#5fa8d0">io.github.josepacelli</text>
+
+  <text x="78" y="240" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="88" font-weight="700" fill="#e8eaed" letter-spacing="-2">http-request</text>
+
+  <text x="80" y="300" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="30" fill="#9aa2ad">Fluent HTTP client for Java. Zero dependencies.</text>
+
+  <text x="80" y="420" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#e8eaed">HttpRequest.get(url)</text>
+  <text x="80" y="458" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#e8eaed">  .accept("application/json")</text>
+  <text x="80" y="496" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#e8eaed">  .code();</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22" fill="#5fa8d0">
+    <rect x="78" y="540" width="130" height="38" rx="8" fill="#24445c"/>
+    <text x="98" y="565">Java 8+</text>
+
+    <rect x="222" y="540" width="100" height="38" rx="8" fill="#24445c"/>
+    <text x="242" y="565">MIT</text>
+
+    <rect x="336" y="540" width="230" height="38" rx="8" fill="#24445c"/>
+    <text x="356" y="565">Maven Central</text>
+  </g>
+</svg>
